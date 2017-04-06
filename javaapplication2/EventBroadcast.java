@@ -17,7 +17,15 @@ public class EventBroadcast {
         /* ROOM CONSTANTS */
         ROOM_LEAVE,ROOM_ENTER
     };
+
+    /**
+     *
+     */
     protected static ArrayList<DataPair<EventID,IEventHandler>> m_handler_list;
+    
+    public static void init(){
+        m_handler_list = new ArrayList<DataPair<EventID,IEventHandler>>();
+    }
     
     public static void event(EventID eventId, int dataId) {
         m_handler_list.stream().filter((a) -> (a.getKey().equals(eventId))).forEach((a) -> {
@@ -26,7 +34,12 @@ public class EventBroadcast {
     }
     
     public static <TData> int registerHandler(EventID eventId,IEventHandler<TData> handler){
-        m_handler_list.add(new DataPair(eventId,handler));
+        try{
+            DataPair<EventID,IEventHandler> m = new DataPair<EventID,IEventHandler>(eventId,handler);
+            m_handler_list.add(m);
+        }catch(Exception e){
+            System.out.println("javaapplication2.EventBroadcast.registerHandler() EXCEPTION " + e.getLocalizedMessage());
+        }
         return 0;
     }
 }

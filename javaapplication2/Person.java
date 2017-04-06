@@ -10,6 +10,7 @@ import java.util.ArrayList;
 /**
  *
  * @author wmerfalen
+ * @param <TPipeInterface>
  */
 public class Person {
     private String name = "";
@@ -17,11 +18,13 @@ public class Person {
     private int m_x;
     private int m_y;
     private int m_z;
+    private IPipeInterface m_pipefd;
     
     Person(){
         m_x = 0;
         m_y = 0;
         m_z = 0;
+        m_pipefd = null;
     }
     
     Person(String n,int id){
@@ -30,6 +33,7 @@ public class Person {
         m_x = 0;
         m_y = 0;
         m_z = 0;
+        m_pipefd = null;
     }
     
     public void setName(String n){
@@ -38,6 +42,10 @@ public class Person {
     
     public String getName(){
         return name;
+    }
+    
+    public void setPipeInterface(IPipeInterface t){
+        m_pipefd = t;
     }
     
     public int id(){
@@ -51,4 +59,11 @@ public class Person {
         return rooms;
     }
     
+    public Integer pipeWrite(String msg){
+        return m_pipefd.write(msg, msg.length());
+    }
+    
+    public String pipeRead(Integer len){
+        return m_pipefd.read(len);
+    }
 }

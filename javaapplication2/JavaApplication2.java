@@ -5,11 +5,10 @@
  */
 package javaapplication2;
 
+
 import java.io.IOException;
-import java.util.ArrayList;
 import javaapplication2.IRoomCallable.IRCReturnStatus;
 import static javaapplication2.IRoomCallable.IRCReturnStatus.*;
-import static javaapplication2.Room.*;
 
 /**
  *
@@ -20,15 +19,33 @@ public class JavaApplication2 {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         // TODO code application logic here
         Person mentoc = new Person("mentoc",10);
         Person foobar = new Person("foobar",11);
         RoomImporter importer = new RoomImporter("rooms.conf");
         
         m_rooms = importer.generateFromFile();
-
+        EventBroadcast.init();
         EventBroadcast.registerHandler(EventBroadcast.EventID.ROOM_ENTER, new EventRoomEnterHandler());
+        EventBroadcast.registerHandler(EventBroadcast.EventID.ROOM_LEAVE, new EventRoomLeaveHandler());
+        
+        SocketServer serv = new SocketServer(4444);
+        while(true){
+            if(serv.accept() == 1){
+                System.out.println("Client Connected ");
+            }
+           
+            String inputLine = null;
+            String commandRegex = "^/[a-zA-Z0-9]{1,}";
+            
+            if(serv.readBufferReady()){
+                
+            }
+            
+            Thread.sleep(100);
+        }
+        
     }
     
     public static Integer[] explodeRoomCoords(String coords){
@@ -87,7 +104,19 @@ public class JavaApplication2 {
             if(eventId.equals(EventBroadcast.EventID.ROOM_ENTER)){
                 Integer[] xy = explodeRoomCoords(dataId.getValue().getKey().coords());
                 for(Person p : m_rooms[xy[0]][xy[1]][0].scan()){
-                    //p.print(p.id() + " entered the room.");
+                    p.pipeWrite(p.id() + " entered the room.");
+                }
+            }
+            return 0;
+        }
+    }
+    private static class EventRoomLeaveHandler implements IEventHandler<DataPair<Person,DataPair<Room,Integer>>> {
+        @Override
+        public int dispatch(EventBroadcast.EventID eventId, DataPair<Person,DataPair<Room,Integer>> dataId) {
+            if(eventId.equals(EventBroadcast.EventID.ROOM_ENTER)){
+                Integer[] xy = explodeRoomCoords(dataId.getValue().getKey().coords());
+                for(Person p : m_rooms[xy[0]][xy[1]][0].scan()){
+                    p.pipeWrite(p.id() + " left the room.");
                 }
             }
             return 0;
