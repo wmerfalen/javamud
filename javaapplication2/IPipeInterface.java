@@ -5,6 +5,8 @@
  */
 package javaapplication2;
 
+import java.nio.channels.SocketChannel;
+
 /**
  *
  * @author wmerfalen
@@ -12,4 +14,5 @@ package javaapplication2;
 public interface IPipeInterface {
     public Integer write(String msg,Integer len);
     public String read(Integer len);
+    public void setSocketChannel(SocketChannel s);
 }

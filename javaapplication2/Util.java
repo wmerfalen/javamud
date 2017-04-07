@@ -23,4 +23,10 @@ public class Util {
         return sb.toString();
     }
     
+    public static ByteBuffer str2bb(String s){
+        ByteBuffer b = ByteBuffer.allocate(s.length());
+        b.put(s.getBytes(), 0,s.length());
+        return b;
+    }
+    
 }

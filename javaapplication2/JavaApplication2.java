@@ -7,6 +7,13 @@ package javaapplication2;
 
 
 import java.io.IOException;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javaapplication2.IRoomCallable.IRCReturnStatus;
 import static javaapplication2.IRoomCallable.IRCReturnStatus.*;
 
@@ -16,6 +23,12 @@ import static javaapplication2.IRoomCallable.IRCReturnStatus.*;
  */
 public class JavaApplication2 {
     protected static Room[][][] m_rooms;
+    protected static ArrayList<DataPair<Socket,Person>> m_socket_person;
+    protected static TextProcessor m_processor;
+    
+    public static final int EVENT_COMMAND_PROCESS = 0;
+    public static final int EVENT_BROADCAST = 1;
+    
     /**
      * @param args the command line arguments
      */
@@ -23,29 +36,64 @@ public class JavaApplication2 {
         // TODO code application logic here
         Person mentoc = new Person("mentoc",10);
         Person foobar = new Person("foobar",11);
+        ArrayList<Person> clients = new ArrayList<Person>();
         RoomImporter importer = new RoomImporter("rooms.conf");
-        
+        m_socket_person = new ArrayList<DataPair<Socket,Person>>();
+        m_processor = new TextProcessor();
         m_rooms = importer.generateFromFile();
+        
         EventBroadcast.init();
         EventBroadcast.registerHandler(EventBroadcast.EventID.ROOM_ENTER, new EventRoomEnterHandler());
         EventBroadcast.registerHandler(EventBroadcast.EventID.ROOM_LEAVE, new EventRoomLeaveHandler());
         
         SocketServer serv = new SocketServer(4444);
+        
         while(true){
-            if(serv.accept() == 1){
+            SocketChannel scTemp = null;
+            if((scTemp = serv.accept()) != null){
                 System.out.println("Client Connected ");
+                Person p = new Person();
+                PersonPipe pipe = new PersonPipe();
+                System.err.println(scTemp.toString());
+                pipe.setSocketChannel(scTemp);
+                p.setPipeInterface(pipe);
+                clients.add(p);
+                m_socket_person.add(new DataPair(scTemp.socket(),p));
             }
-           
+
             String inputLine = null;
             String commandRegex = "^/[a-zA-Z0-9]{1,}";
-            
-            if(serv.readBufferReady()){
-                
+            DataPair<SocketChannel,String> readBuffer = null;
+            if((readBuffer = serv.readBuffer()) != null){
+                Person p = getPersonObjectBySocket(readBuffer.getKey());
+                if(p != null){
+                    DataPair<Integer,String> response = m_processor.parseCommand(p,readBuffer.getValue());
+                    switch(response.getKey().intValue()){
+                        case JavaApplication2.EVENT_BROADCAST:
+                            System.out.println("javaapplication2.JavaApplication2.main() BROADCST: " + response.getValue());
+                            break;
+                        case JavaApplication2.EVENT_COMMAND_PROCESS:
+                            System.out.println("CMD: " + readBuffer.getValue() + ": " + response.getValue());
+                            break;
+                        default:
+                            System.out.println("javaapplication2.JavaApplication2.main() DEFAULT");
+                    }
+                }
             }
             
             Thread.sleep(100);
         }
         
+    }
+    
+    public static Person getPersonObjectBySocket(SocketChannel s){
+        Socket sock = s.socket();
+        for(DataPair<Socket,Person> d : m_socket_person){
+            if(d.getKey().equals(sock)){
+                return d.getValue();
+            }
+        }
+        return null;
     }
     
     public static Integer[] explodeRoomCoords(String coords){
@@ -121,5 +169,48 @@ public class JavaApplication2 {
             }
             return 0;
         }
+    }
+    
+    private static class PersonPipe implements IPipeInterface {
+        private SocketChannel m_socket;
+        public static Integer PIPE_SOCKET_CLOSED = -1;
+        public static Integer PIPE_NO_ACTION = -2;
+        
+        @Override
+        public Integer write(String msg, Integer len) {
+            if(!m_socket.isOpen()){
+                System.out.println("javaapplication2.JavaApplication2.PersonPipe.write() -- M SOCKET ISNT OPEN");
+                return PersonPipe.PIPE_SOCKET_CLOSED;
+            }
+            try {
+                ByteBuffer b = Util.str2bb(msg);
+                b.rewind();
+                return m_socket.write(b);
+            } catch (IOException ex) {
+                Logger.getLogger(JavaApplication2.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return PersonPipe.PIPE_NO_ACTION;
+        }
+
+        @Override
+        public String read(Integer len) {
+            ByteBuffer b = ByteBuffer.allocate(1);
+            try {
+                int ret = m_socket.read(b);
+                if(ret <= 0){
+                    return null;
+                }
+                return Util.bb2str(b);
+            } catch (IOException ex) {
+                Logger.getLogger(JavaApplication2.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return null;
+        }
+
+        @Override
+        public void setSocketChannel(SocketChannel s) {
+            m_socket = s;
+        }
+        
     }
 }

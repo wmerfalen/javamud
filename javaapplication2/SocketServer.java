@@ -7,13 +7,11 @@ package javaapplication2;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.UUID;
 
 /**
@@ -24,7 +22,6 @@ public class SocketServer {
     protected ArrayList<SocketChannel> m_sockets;
     protected ServerSocketChannel m_server;
     protected ArrayList<DataPair<SocketChannel,String>> m_read_buffers;
-    protected ArrayList<SocketChannel> m_needs_auth;
     
     SocketServer() throws Exception{
         throw new Exception("Please call the Socket(Integer port) constructor");
@@ -32,7 +29,6 @@ public class SocketServer {
     
     SocketServer(Integer port){
         m_read_buffers = new ArrayList<DataPair<SocketChannel,String>>();
-        m_needs_auth = new ArrayList<SocketChannel>();
         try{
             m_server = ServerSocketChannel.open();
             m_server.socket().bind(new InetSocketAddress(port));
@@ -44,49 +40,35 @@ public class SocketServer {
         m_sockets = new ArrayList<SocketChannel>();
     }
     
-    public Integer accept(){
-        Integer acceptCount = 0;
+    public SocketChannel accept(){
+        SocketChannel clientSocket = null;
         try{
-            SocketChannel clientSocket = m_server.accept();
+            clientSocket = m_server.accept();
             if(clientSocket == null){
-                return 0;
+                return null;
             }
             m_sockets.add(clientSocket);
-            m_needs_auth.add(clientSocket);
-            acceptCount++;
         }catch(Exception e){
             System.out.println("javaapplication2.JavaApplication2.main() " + e.getMessage());
         }
-        return acceptCount;
+        return clientSocket;
     }
     
     public String uniqid(){
         return UUID.randomUUID().toString();
     }
     
-    public boolean readBufferReady() throws IOException{
+    public DataPair<SocketChannel,String> readBuffer() throws IOException{
         ByteBuffer buf = ByteBuffer.allocate(1024);
-        boolean read = false;
-        for(SocketChannel s: m_sockets){
+        for (SocketChannel s : m_sockets) {
             if(s.read(buf) > 0){
-                m_read_buffers.add(new DataPair(s,Util.bb2str(buf)));
-                read = true;
+                return new DataPair(s,Util.bb2str(buf));
             }
-            buf.clear();
         }
-        return read;
+        return null;
     }
     
     public ArrayList<DataPair<SocketChannel,String>> getReadBuffers(){
         return m_read_buffers;
     }
-    
-    public Integer authorizeSocket(SocketChannel s){
-        if(m_needs_auth.contains(s)){
-            m_needs_auth.remove(s);
-            return 1;
-        }
-        return 0;
-    }
-
 }
