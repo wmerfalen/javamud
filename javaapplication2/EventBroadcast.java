@@ -5,6 +5,7 @@
  */
 package javaapplication2;
 
+import javaapplication2.interfaces.IEventHandler;
 import java.util.ArrayList;
 
 /**

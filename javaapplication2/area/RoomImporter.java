@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2;
+package javaapplication2.area;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class RoomImporter {
     private String m_file_name;
     
-    RoomImporter(String fName){
+    public RoomImporter(String fName){
         m_file_name = fName;
     }
     

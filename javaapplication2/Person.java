@@ -5,6 +5,8 @@
  */
 package javaapplication2;
 
+import javaapplication2.area.Room;
+import javaapplication2.interfaces.IPipeInterface;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 

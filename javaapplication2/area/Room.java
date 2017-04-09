@@ -3,11 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2;
+package javaapplication2.area;
 
 
 /* For the removal of array elements */
 import java.util.ArrayList;
+import javaapplication2.EventBroadcast;
+import javaapplication2.Person;
 
 /**
  *
@@ -130,7 +132,7 @@ public class Room {
         }
     }
 
-    void clearDirection(int dir) {
+    public void clearDirection(int dir) {
         switch(dir){
             case Room.DOWN:
                 m_down = null;
@@ -167,7 +169,7 @@ public class Room {
         }
     }
 
-    String coords() {
+    public String coords() {
         return Integer.toString(m_x) + ":" + 
                 Integer.toString(m_y) + ":" + 
                 Integer.toString(m_z);
