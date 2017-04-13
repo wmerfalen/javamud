@@ -6,6 +6,8 @@
 package javamud.area;
 
 import javamud.mysql.Mysql;
+import javamud.mysql.Static;
+import org.flywaydb.core.Flyway;
 
 /**
  *
@@ -13,10 +15,13 @@ import javamud.mysql.Mysql;
  */
 public class RoomSchema {
     private Mysql m_db = null;
-    
+    private Flyway m_fly = null;
     public RoomSchema(){
-        m_db = null;
+        m_db = Static.mysql;
+        m_fly = new Flyway();
     }
     
-    
+    public void migrate(String migrationDir){
+        m_fly.setDataSource(m_db.getDataSourceBaseUrl(),m_db.getUser(),m_db.getPass());
+    }
 }

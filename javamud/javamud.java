@@ -18,6 +18,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javamud.area.RoomSchema;
 import javamud.interfaces.IRoomCallable.IRCReturnStatus;
 import static javamud.interfaces.IRoomCallable.IRCReturnStatus.IRC_KEEP_ITERATING;
 import static javamud.interfaces.IRoomCallable.IRCReturnStatus.IRC_RETURN_CURRENT;
@@ -45,6 +46,15 @@ public class javamud {
         }catch(Exception e){
             System.err.println("Mysql startup failed: " + e.getLocalizedMessage());
             throw e;
+        }
+        Config conf = new Config();
+        for(String arg : args){
+            if(arg.equals("--migrate")){
+                RoomSchema rs = new RoomSchema();
+                rs.migrate(conf.migration_dir);
+                System.out.println("Migration finished. WARNING[STATUS IS UNCHECKED]");
+                return;
+            }
         }
         
         Person mentoc = new Person("mentoc",10);

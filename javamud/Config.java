@@ -15,6 +15,7 @@ public class Config {
     public String mysql_pass;
     public String mysql_db;
     public boolean autoload_mysql;
+    public String migration_dir;
     
     public Config(){
         mysql_host = "localhost";
@@ -22,5 +23,6 @@ public class Config {
         mysql_db = "javamud";
         mysql_pass = "javamud1234";
         autoload_mysql = true;
+        migration_dir = System.getProperty("user.dir") + "/migrations/";
     }
 }

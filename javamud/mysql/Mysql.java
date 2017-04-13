@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import javamud.Config;
 import javamud.area.Room;
+import javax.sql.DataSource;
 
 public class Mysql {
     private Connection m_connect = null;
@@ -23,7 +24,7 @@ public class Mysql {
     private String m_db_user = null;
     private String m_db_pass = null;
     private boolean m_loaded = false;
-    
+    private String m_data_source = null;
     public Mysql(){
         m_connect = null;
         m_db_user = null;
@@ -38,6 +39,7 @@ public class Mysql {
         m_db_pass = conf.mysql_pass;
         m_db_db = conf.mysql_db;
         m_db_host = conf.mysql_host;
+        m_data_source = "jdbc:mysql://" + m_db_host + "/" + m_db_db + "?" + "user=" + m_db_user + "&password=" + m_db_pass;
         if(conf.autoload_mysql){
             try{
                 load();
@@ -61,8 +63,23 @@ public class Mysql {
         m_db_pass = pass;
     }
     
+    public String getDataSourceBaseUrl(){
+        return "jdbc:mysql://" + m_db_host + "/" + m_db_db;
+    }
+    
+    public String getUser(){
+        return m_db_user;
+    }
+
+    public String getPass(){
+        return m_db_pass;
+    }
+    
     public void load() throws Exception {
-        m_connect = DriverManager.getConnection("jdbc:mysql://" + m_db_host + "/" + m_db_db + "?" + "user=" + m_db_user + "&password=" + m_db_pass);
+        if(m_data_source == null){
+            m_data_source = "jdbc:mysql://" + m_db_host + "/" + m_db_db + "?" + "user=" + m_db_user + "&password=" + m_db_pass;
+        }
+        m_connect = DriverManager.getConnection(m_data_source);
     }
 
     public PreparedStatement prepare(String query) throws SQLException, Exception{
@@ -80,6 +97,10 @@ public class Mysql {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    public String getDataSource() {
+        return m_data_source;
     }
     
 }
