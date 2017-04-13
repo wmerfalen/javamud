@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2.interfaces;
+package javamud.interfaces;
 
-import javaapplication2.area.Room;
+import javamud.area.Room;
 
 /**
  *

@@ -3,15 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2.area;
+package javamud.area;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javamud.mysql.Mysql;
 
 /**
  *
@@ -22,6 +27,53 @@ public class RoomImporter {
     
     public RoomImporter(String fName){
         m_file_name = fName;
+    }
+    
+    public ArrayList<Room> importFromDB(Integer areaId) throws SQLException, Exception{
+        Mysql db;
+        db = new Mysql("localhost","javamud","javamud_user","sudorm-rf/");
+        PreparedStatement stmt = db.prepare("SELECT * FROM rooms where area_id = ?");
+        stmt.setInt(0, areaId.intValue());
+        ResultSet res = stmt.executeQuery();
+        ArrayList<Room> rooms = new ArrayList<Room>();
+        
+        ArrayList<Integer> ids = new ArrayList<Integer>();
+        while(res.next()){
+            int id = res.getInt("id");
+            Room r = new Room(id,
+                    res.getString("name"),
+                    res.getString("description"),
+                    res.getInt("x"),
+                    res.getInt("y"),
+                    res.getInt("z")
+            );
+            if(res.getInt("dir_north") != 0){
+                r.attachRoomId(res.getInt("dir_north"),Room.NORTH);
+            }
+            if(res.getInt("dir_northeast") != 0){
+                r.attachRoomId(res.getInt("dir_northeast"),Room.NORTHEAST);
+            }
+            if(res.getInt("dir_northwest") != 0){
+                r.attachRoomId(res.getInt("dir_northwest"),Room.NORTHWEST);
+            }
+            if(res.getInt("dir_east") != 0){
+                r.attachRoomId(res.getInt("dir_east"),Room.EAST);
+            }
+            if(res.getInt("dir_west") != 0){
+                r.attachRoomId(res.getInt("dir_west"),Room.WEST);
+            }
+            if(res.getInt("dir_south") != 0){
+                r.attachRoomId(res.getInt("dir_south"),Room.SOUTH);
+            }
+            if(res.getInt("dir_southeast") != 0){
+                r.attachRoomId(res.getInt("dir_southeast"),Room.SOUTHEAST);
+            }
+            if(res.getInt("dir_southwest") != 0){
+                r.attachRoomId(res.getInt("dir_south"),Room.SOUTHWEST);
+            }
+            rooms.add(r);
+        }
+        return rooms;
     }
     
     public ArrayList<Room> importFromFile() throws IOException {
@@ -70,7 +122,9 @@ public class RoomImporter {
                     }
                     iField++;
                 }
-                rooms.add(new Room(roomName,roomDesc,x,y,z));
+                if(roomName != null && roomDesc != null){
+                    rooms.add(new Room(roomName,roomDesc,x,y,z));
+                }
             }
         } catch (FileNotFoundException ex) {
             System.err.println("Cannot open file!" + m_file_name);

@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2;
+package javamud;
 
-import javaapplication2.interfaces.IEventHandler;
+import javamud.interfaces.IEventHandler;
 import java.util.ArrayList;
 
 /**

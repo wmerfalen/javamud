@@ -3,14 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2.interfaces;
+package javamud.area;
 
-import javaapplication2.EventBroadcast.EventID;
+import javamud.mysql.Mysql;
 
 /**
  *
  * @author wmerfalen
  */
-public interface IEventHandler<TDataType> {
-    public int dispatch(EventID eventId,TDataType dataId);
+public class RoomSchema {
+    private Mysql m_db = null;
+    
+    public RoomSchema(){
+        m_db = null;
+    }
+    
+    
 }

@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2;
+package javamud;
 
-import javaapplication2.area.Room;
-import javaapplication2.interfaces.IPipeInterface;
+import javamud.area.Room;
+import javamud.interfaces.IPipeInterface;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 

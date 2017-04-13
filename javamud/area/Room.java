@@ -3,13 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2.area;
+package javamud.area;
 
 
 /* For the removal of array elements */
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import javaapplication2.EventBroadcast;
-import javaapplication2.Person;
+import javamud.EventBroadcast;
+import javamud.Person;
+import javamud.mysql.Static;
 
 /**
  *
@@ -29,12 +33,15 @@ public class Room {
     public static final int DOWN = 9;
     
     private ArrayList<Person> m_inhabitants;
+    private int m_id;
     private String m_name;
     private String m_desc;
     private int m_x =0;
     private int m_y =0;
     private int m_z =0;
+    private boolean m_loaded = false;
 
+    
     private Room m_north = null;
     private Room m_northwest = null;
     private Room m_northeast = null;
@@ -48,22 +55,53 @@ public class Room {
     
     private ArrayList<Room> m_adjacent;
     
-    Room(String rName,int _x,int _y,int _z){
+    public Room(int id) throws Exception{
+        m_id = id;
+        m_loaded = loadById(m_id);
+    }
+    
+    public Room(String rName,int _x,int _y,int _z){
+        m_id = 0;
         m_x = _x;
         m_y = _y;
         m_z = _z;
         m_name = rName;
         m_adjacent = null;
+        m_loaded = false;
     }
 
-    Room(String roomName, String roomDesc, int x, int y, int z) {
+    public Room(String roomName, String roomDesc, int x, int y, int z) {
+        m_id = 0;
         m_name = roomName;
         m_desc = roomDesc;
         m_x = x;
         m_y = y;
         m_z = z;
         m_adjacent = null;
+        m_loaded = false;
     }
+    
+    public Room(int id,String roomName, String roomDesc, int x, int y, int z) throws Exception {
+        m_id = id;
+        m_name = roomName;
+        m_desc = roomDesc;
+        m_x = x;
+        m_y = y;
+        m_z = z;
+        m_adjacent = null;
+        m_loaded = loadById(id);
+    }
+
+    public Room() {
+        m_id = 0;
+        m_x = 0;
+        m_y = 0;
+        m_z = 0;
+        m_name = null;
+        m_adjacent = null;
+        m_loaded = false;
+    }
+
 
     public void attachRoom(Room r,int dir){
         switch(dir){
@@ -173,5 +211,92 @@ public class Room {
         return Integer.toString(m_x) + ":" + 
                 Integer.toString(m_y) + ":" + 
                 Integer.toString(m_z);
+    }
+
+    public void attachRoomId(int roomId, int direction) throws Exception {
+        if(direction == Room.NORTH){
+            m_north = new Room(roomId);
+        }
+    }
+
+    public boolean loadById(int id) throws SQLException, Exception {
+        try{
+            PreparedStatement prep = Static.mysql.prepare("SELECT * FROM rooms where id = ?");
+            prep.setInt(0, id);
+            ResultSet r = prep.executeQuery();
+            m_id = r.getInt("id");
+            m_x = r.getInt("x");
+            m_y = r.getInt("y");
+            m_z = r.getInt("z");
+            int temp = r.getInt("dir_up");
+            if(temp != 0){
+                m_up = new Room(temp);
+            }else{
+                m_up = null;
+            }
+            temp = r.getInt("dir_down");
+            if(temp != 0){
+                m_down = new Room(temp);
+            }else{
+                m_down = null;
+            }
+            temp = r.getInt("dir_north");
+            if(temp != 0){
+                m_north = new Room(temp);
+            }else{
+                m_north = null;
+            }
+            temp = r.getInt("dir_east");
+            if(temp != 0){
+                m_east = new Room(temp);
+            }else{
+                m_east = null;
+            }
+            temp = r.getInt("dir_west");
+            if(temp != 0){
+                m_west = new Room(temp);
+            }else{
+                m_west = null;
+            }
+            temp = r.getInt("dir_south");
+            if(temp != 0){
+                m_south = new Room(temp);
+            }else{
+                m_south = null;
+            }
+            temp = r.getInt("dir_northeast");
+            if(temp != 0){
+                m_northeast = new Room(temp);
+            }else{
+                m_northeast = null;
+            }
+            temp = r.getInt("dir_northwest");
+            if(temp != 0){
+                m_northwest = new Room(temp);
+            }else{
+                m_northwest = null;
+            }
+            temp = r.getInt("dir_southeast");
+            if(temp != 0){
+                m_southeast = new Room(temp);
+            }else{
+                m_southeast = null;
+            }
+            temp = r.getInt("dir_southwest");
+            if(temp != 0){
+                m_southwest = new Room(temp);
+            }else{
+                m_southwest = null;
+            }
+            m_loaded = true;
+        }catch(Exception e){
+            m_loaded = false;
+            return false;
+        }
+        return true;
+    }
+
+    public boolean loaded() {
+        return m_loaded;
     }
 }

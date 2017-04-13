@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication2;
+package javamud;
 
 
-import javaapplication2.area.Room;
-import javaapplication2.area.RoomImporter;
-import javaapplication2.interfaces.IPipeInterface;
-import javaapplication2.interfaces.IRoomCallable;
-import javaapplication2.interfaces.IEventHandler;
+import javamud.area.Room;
+import javamud.area.RoomImporter;
+import javamud.interfaces.IPipeInterface;
+import javamud.interfaces.IRoomCallable;
+import javamud.interfaces.IEventHandler;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -18,15 +18,17 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javaapplication2.interfaces.IRoomCallable.IRCReturnStatus;
-import static javaapplication2.interfaces.IRoomCallable.IRCReturnStatus.IRC_KEEP_ITERATING;
-import static javaapplication2.interfaces.IRoomCallable.IRCReturnStatus.IRC_RETURN_CURRENT;
+import javamud.interfaces.IRoomCallable.IRCReturnStatus;
+import static javamud.interfaces.IRoomCallable.IRCReturnStatus.IRC_KEEP_ITERATING;
+import static javamud.interfaces.IRoomCallable.IRCReturnStatus.IRC_RETURN_CURRENT;
+import javamud.mysql.Mysql;
+import javamud.mysql.Static;
 
 /**
  *
  * @author wmerfalen
  */
-public class JavaApplication2 {
+public class javamud {
     protected static Room[][][] m_rooms;
     protected static ArrayList<DataPair<Socket,Person>> m_socket_person;
     protected static TextProcessor m_processor;
@@ -37,8 +39,14 @@ public class JavaApplication2 {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException, InterruptedException {
-        // TODO code application logic here
+    public static void main(String[] args) throws IOException, InterruptedException, Exception {
+        try{
+            Static.mysql = new Mysql(new Config());
+        }catch(Exception e){
+            System.err.println("Mysql startup failed: " + e.getLocalizedMessage());
+            throw e;
+        }
+        
         Person mentoc = new Person("mentoc",10);
         Person foobar = new Person("foobar",11);
         ArrayList<Person> clients = new ArrayList<Person>();
@@ -74,10 +82,10 @@ public class JavaApplication2 {
                 if(p != null){
                     DataPair<Integer,String> response = m_processor.parseCommand(p,readBuffer.getValue());
                     switch(response.getKey().intValue()){
-                        case JavaApplication2.EVENT_BROADCAST:
+                        case javamud.EVENT_BROADCAST:
                             System.out.println("javaapplication2.JavaApplication2.main() BROADCST: " + response.getValue());
                             break;
-                        case JavaApplication2.EVENT_COMMAND_PROCESS:
+                        case javamud.EVENT_COMMAND_PROCESS:
                             System.out.println("CMD: " + readBuffer.getValue() + ": " + response.getValue());
                             break;
                         default:
@@ -192,7 +200,7 @@ public class JavaApplication2 {
                 b.rewind();
                 return m_socket.write(b);
             } catch (IOException ex) {
-                Logger.getLogger(JavaApplication2.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(javamud.class.getName()).log(Level.SEVERE, null, ex);
             }
             return PersonPipe.PIPE_NO_ACTION;
         }
@@ -207,7 +215,7 @@ public class JavaApplication2 {
                 }
                 return Util.bb2str(b);
             } catch (IOException ex) {
-                Logger.getLogger(JavaApplication2.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(javamud.class.getName()).log(Level.SEVERE, null, ex);
             }
             return null;
         }
